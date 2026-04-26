@@ -135,6 +135,11 @@ MainTab:Toggle({
     end
 })
 
+MovementTab:Section({
+    Title = "Movement",
+    Icon = "chevrons-right",
+})
+
 MovementTab:Toggle({
     Title = "Infinite Stamina",
     Desc = "",
@@ -440,6 +445,11 @@ MovementTab:Slider({
     end
 })
 
+VisualsTab:Section({
+    Title = "Visuals",
+    Icon = "users",
+})
+
 VisualsTab:Toggle({
     Title = "Killer ESP",
     Desc = "",
@@ -737,22 +747,20 @@ VisualsTab:Toggle({
     end
 })
 
+SkillsSelectorTab:Section({
+    Title = "Skill Selector",
+    Icon = "blocks",
+})
+
 SkillsSelectorTab:Dropdown({
     Title = "Select Skill 1",
     Desc = "",
-    Values = { "None", "Adrenaline", "Punch", "Caretaker", "Cloak", "Block", "Dash", "BonusPad", "Hotdog", "Revolver", "Taunt", "Banana" },
+    Values = { "None","Adrenaline","Punch","Caretaker","Cloak","Block","Dash","BonusPad","Hotdog","Revolver","Taunt","Banana" },
     Value = "None",
-    Locked = true,
+    Locked = false,
     Callback = function(option)
 
-        local player = game:GetService("Players").LocalPlayer
-
-        for _,v in ipairs(workspace:GetDescendants()) do
-            if v:IsA("Model") and v.Name == player.Name then
-                v:SetAttribute("Ability1", option)
-                break
-            end
-        end
+        _G._skill1 = option
 
     end
 })
@@ -760,19 +768,12 @@ SkillsSelectorTab:Dropdown({
 SkillsSelectorTab:Dropdown({
     Title = "Select Skill 2",
     Desc = "",
-    Values = { "None", "Adrenaline", "Punch", "Caretaker", "Cloak", "Block", "Dash", "BonusPad", "Hotdog", "Revolver", "Taunt", "Banana" },
+    Values = { "None","Adrenaline","Punch","Caretaker","Cloak","Block","Dash","BonusPad","Hotdog","Revolver","Taunt","Banana" },
     Value = "None",
-    Locked = true,
+    Locked = false,
     Callback = function(option)
 
-        local player = game:GetService("Players").LocalPlayer
-
-        for _,v in ipairs(workspace:GetDescendants()) do
-            if v:IsA("Model") and v.Name == player.Name then
-                v:SetAttribute("Ability2", option)
-                break
-            end
-        end
+        _G._skill2 = option
 
     end
 })
@@ -780,33 +781,50 @@ SkillsSelectorTab:Dropdown({
 SkillsSelectorTab:Button({
     Title = "Choose Ability",
     Desc = "",
-    Locked = true,
+    Locked = false,
     Callback = function()
 
-        local player = game:GetService("Players").LocalPlayer
+        local Abilities_Table = {
+            "Cloak","Punch","Taunt","BonusPad","Block","Caretaker",
+            "Dash","Hotdog","Revolver","Adrenaline","Banana"
+        }
 
-        local function getCharacter()
-            for _,v in ipairs(workspace:GetDescendants()) do
-                if v:IsA("Model") and v.Name == player.Name then
-                    return v
-                end
-            end
+        local AbilityData = {
+            ["Adrenaline"]={Name="Adrenaline"},
+            ["Punch"]={Name="Punch"},
+            ["Caretaker"]={Name="Caretaker"},
+            ["Cloak"]={Name="Cloak"},
+            ["Block"]={Name="Block"},
+            ["Dash"]={Name="Dash"},
+            ["BonusPad"]={Name="BonusPad"},
+            ["Hotdog"]={Name="Hotdog"},
+            ["Revolver"]={Name="Revolver"},
+            ["Taunt"]={Name="Taunt"},
+            ["Banana"]={Name="Banana"}
+        }
+
+        local function ReturnAbilityData(a)
+            return AbilityData[a]
         end
 
-        local char = getCharacter()
-        if not char then return end
-
-        local ability1 = char:GetAttribute("Ability1")
-        local ability2 = char:GetAttribute("Ability2")
+        local AbilityModule
+        pcall(function()
+            AbilityModule = require(game:GetService("Players").LocalPlayer
+                :WaitForChild("PlayerGui")
+                :WaitForChild("MainGui")
+                :WaitForChild("Client")
+                :WaitForChild("Modules")
+                :WaitForChild("Ability"))
+        end)
 
         local abilities = {}
 
-        if ability1 and ability1 ~= "None" then
-            table.insert(abilities, tostring(ability1))
+        if _G._skill1 and _G._skill1 ~= "None" then
+            table.insert(abilities, tostring(_G._skill1))
         end
 
-        if ability2 and ability2 ~= "None" then
-            table.insert(abilities, tostring(ability2))
+        if _G._skill2 and _G._skill2 ~= "None" then
+            table.insert(abilities, tostring(_G._skill2))
         end
 
         if #abilities == 0 then return end
@@ -822,8 +840,69 @@ SkillsSelectorTab:Button({
             :WaitForChild("AbilitySelection")
             :FireServer(abilities)
 
-        for _,ability in ipairs(abilities) do
-            AbilityModule["CreateAbility"](ReturnAbilityData(ability))
+        if AbilityModule then
+            for _,ability in ipairs(abilities) do
+                AbilityModule["CreateAbility"](ReturnAbilityData(ability))
+            end
+        end
+
+    end
+})
+
+SkillsSelectorTab:Button({
+    Title = "Give All Abilities",
+    Desc = "",
+    Locked = false,
+    Callback = function()
+
+        local Abilities_Table = {
+            "Cloak","Punch","Taunt","BonusPad","Block","Caretaker",
+            "Dash","Hotdog","Revolver","Adrenaline","Banana"
+        }
+
+        local AbilityData = {
+            ["Adrenaline"]={Name="Adrenaline"},
+            ["Punch"]={Name="Punch"},
+            ["Caretaker"]={Name="Caretaker"},
+            ["Cloak"]={Name="Cloak"},
+            ["Block"]={Name="Block"},
+            ["Dash"]={Name="Dash"},
+            ["BonusPad"]={Name="BonusPad"},
+            ["Hotdog"]={Name="Hotdog"},
+            ["Revolver"]={Name="Revolver"},
+            ["Taunt"]={Name="Taunt"},
+            ["Banana"]={Name="Banana"}
+        }
+
+        local function ReturnAbilityData(a)
+            return AbilityData[a]
+        end
+
+        local AbilityModule
+        pcall(function()
+            AbilityModule = require(game:GetService("Players").LocalPlayer
+                :WaitForChild("PlayerGui")
+                :WaitForChild("MainGui")
+                :WaitForChild("Client")
+                :WaitForChild("Modules")
+                :WaitForChild("Ability"))
+        end)
+
+        if TestRequire() ~= true then
+            ErrorRequire()
+            return
+        end
+
+        for _,ability in ipairs(Abilities_Table) do
+            game:GetService("ReplicatedStorage")
+                :WaitForChild("Events")
+                :WaitForChild("RemoteEvents")
+                :WaitForChild("AbilitySelection")
+                :FireServer({tostring(ability)})
+
+            if AbilityModule then
+                AbilityModule["CreateAbility"](ReturnAbilityData(ability))
+            end
         end
 
     end
