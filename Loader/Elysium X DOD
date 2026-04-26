@@ -39,7 +39,7 @@ Window:EditOpenButton({
 local MainTab = Window:Tab({ Title = "Main", Icon = "star", Locked = false })
 local MovementTab = Window:Tab({ Title = "Movement", Icon = "chevrons-right", Locked = false })
 local VisualsTab = Window:Tab({ Title = "Visuals", Icon = "eye", Locked = false })
-local SkillsSelectorTab = Window:Tab({ Title = "Skills Selector", Icon = "sword", Locked = false })
+local SkillsSelectorTab = Window:Tab({ Title = "Skills Selector", Icon = "blocks", Locked = false })
 local MiscTab = Window:Tab({ Title = "Misc", Icon = "folder", Locked = false })
 local SettingsTab = Window:Tab({ Title = "Settings", Icon = "cog", Locked = false})
 
@@ -447,7 +447,7 @@ MovementTab:Slider({
 
 VisualsTab:Section({
     Title = "Visuals",
-    Icon = "users",
+    Icon = "eye",
 })
 
 VisualsTab:Toggle({
