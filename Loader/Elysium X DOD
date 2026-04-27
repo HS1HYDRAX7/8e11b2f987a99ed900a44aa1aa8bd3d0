@@ -207,263 +207,80 @@ MovementTab:Toggle({
     end
 })
 
-MovementTab:Toggle({
-    Title = "Enable Jump (PC ONLY)",
-    Desc = "",
-    Value = false,
-    Callback = function(state)
+MovementTab:Input({
+    Title = "Max Stamina",
+    Placeholder = "Type Here!",
+    NumbersOnly = true,
+    OnEnter = true,
+    Callback = function(v)
+        _G._maxStamina = tonumber(v)
+    end
+})
 
-        local Players = game:GetService("Players")
-        local UIS = game:GetService("UserInputService")
-        local LocalPlayer = Players.LocalPlayer
+MovementTab:Input({
+    Title = "Sprint Speed",
+    Placeholder = "Type Here!",
+    NumbersOnly = true,
+    OnEnter = true,
+    Callback = function(v)
+        _G._sprintSpeed = tonumber(v)
+    end
+})
 
-        _G.jumpEnabledPC = state
-        _G.jumpPowerValue = _G.jumpPowerValue or 50
+MovementTab:Input({
+    Title = "Walk Speed",
+    Placeholder = "Type Here!",
+    NumbersOnly = true,
+    OnEnter = true,
+    Callback = function(v)
+        _G._walkSpeed = tonumber(v)
+    end
+})
 
-        local function getCharacter()
-            for _,v in ipairs(workspace:GetDescendants()) do
-                if v:IsA("Model") and v.Name == LocalPlayer.Name then
-                    return v
+MovementTab:Input({
+    Title = "Walk Speed Modifier",
+    Placeholder = "Type Here!",
+    NumbersOnly = true,
+    OnEnter = true,
+    Callback = function(v)
+        _G._walkSpeedMod = tonumber(v)
+    end
+})
+
+MovementTab:Button({
+    Title = "Apply Changes",
+    Callback = function()
+
+        if SetAtt then
+            if _G._maxStamina then
+                SetAtt("MaxStamina", _G._maxStamina)
+            end
+
+            if _G._sprintSpeed then
+                SetAtt("SprintSpeed", _G._sprintSpeed)
+            end
+
+            if _G._walkSpeed then
+                SetAtt("WalkSpeed", _G._walkSpeed)
+            end
+
+            if _G._walkSpeedMod then
+                SetAtt("WalkSpeedModifier", _G._walkSpeedMod)
+            end
+        end
+
+        local player = game:GetService("Players").LocalPlayer
+        local char = workspace:FindFirstChild(player.Name)
+
+        if char then
+            if _G._walkSpeed then
+                local hum = char:FindFirstChildOfClass("Humanoid")
+                if hum then
+                    hum.WalkSpeed = _G._walkSpeed
                 end
             end
         end
 
-local function playAssets(char)
-    if not char then return end
-
-    local Players = game:GetService("Players")
-    local Debris = game:GetService("Debris")
-
-    local hum = char:FindFirstChildOfClass("Humanoid")
-    local root = char:FindFirstChild("HumanoidRootPart")
-    if not hum or not root then return end
-
-    if _G.jumpTrack then
-        pcall(function()
-            _G.jumpTrack:Stop()
-            _G.jumpTrack:Destroy()
-        end)
-        _G.jumpTrack = nil
-    end
-
-    local sound = Instance.new("Sound")
-    sound.SoundId = "rbxassetid://2428506580"
-    sound.Volume = 1
-    sound.Parent = root
-    sound:Play()
-    Debris:AddItem(sound, 3)
-
-    local animator = hum:FindFirstChildOfClass("Animator") or Instance.new("Animator", hum)
-
-    local anim = Instance.new("Animation")
-    anim.AnimationId = "rbxassetid://73252070456923"
-
-    local track = animator:LoadAnimation(anim)
-    track.Looped = false
-    track:Play()
-
-    _G.jumpTrack = track
-
-    task.spawn(function()
-        while _G.jumpTrack do
-            if hum.FloorMaterial ~= Enum.Material.Air then
-                pcall(function()
-                    _G.jumpTrack:Stop()
-                    _G.jumpTrack:Destroy()
-                end)
-                _G.jumpTrack = nil
-                break
-            end
-            task.wait(0.1)
-        end
-    end)
-end
-
-        local function jump()
-            local char = getCharacter()
-            if not char then return end
-
-            local root = char:FindFirstChild("HumanoidRootPart")
-            local hum = char:FindFirstChildOfClass("Humanoid")
-
-            if not root or not hum then return end
-            if hum.FloorMaterial == Enum.Material.Air then return end
-
-            root.Velocity = Vector3.new(root.Velocity.X, _G.jumpPowerValue, root.Velocity.Z)
-            playAssets(char)
-        end
-
-        if state then
-            if _G.jumpInputConn then
-                _G.jumpInputConn:Disconnect()
-            end
-
-            _G.jumpInputConn = UIS.InputBegan:Connect(function(input, gpe)
-                if gpe then return end
-                if input.KeyCode == Enum.KeyCode.Space then
-                    jump()
-                end
-            end)
-        else
-            if _G.jumpInputConn then
-                _G.jumpInputConn:Disconnect()
-                _G.jumpInputConn = nil
-            end
-        end
-
-    end
-})
-
-MovementTab:Slider({
-    Title = "JumpPower Value",
-    Desc = "",
-    Step = 1,
-    Value = {
-        Min = 1,
-        Max = 100,
-        Default = 50,
-    },
-    Callback = function(value)
-        _G.jumpPowerValue = value
-    end
-})
-
-MovementTab:Toggle({
-    Title = "Mobile Jump Button",
-    Desc = "",
-    Value = false,
-    Callback = function(state)
-
-        local Players = game:GetService("Players")
-        local LocalPlayer = Players.LocalPlayer
-
-        _G.mobileJumpPowerValue = _G.mobileJumpPowerValue or 50
-
-        local function getCharacter()
-            for _,v in ipairs(workspace:GetDescendants()) do
-                if v:IsA("Model") and v.Name == LocalPlayer.Name then
-                    return v
-                end
-            end
-        end
-
-local function playAssets(char)
-    if not char then return end
-
-    local hum = char:FindFirstChildOfClass("Humanoid")
-    local root = char:FindFirstChild("HumanoidRootPart")
-    if not hum or not root then return end
-
-    local sound = Instance.new("Sound")
-    sound.SoundId = "rbxassetid://2428506580"
-    sound.Volume = 1
-    sound.Parent = root
-    sound:Play()
-    game:GetService("Debris"):AddItem(sound, 3)
-
-    local animator = hum:FindFirstChildOfClass("Animator") or Instance.new("Animator", hum)
-
-    if _G.jumpTrack then
-        _G.jumpTrack:Stop()
-        _G.jumpTrack:Destroy()
-        _G.jumpTrack = nil
-    end
-
-    local anim = Instance.new("Animation")
-    anim.AnimationId = "rbxassetid://73252070456923"
-
-    local track = animator:LoadAnimation(anim)
-    track.Looped = false
-    track:Play()
-
-    _G.jumpTrack = track
-
-    local conn
-    conn = hum.StateChanged:Connect(function(_, new)
-        if new == Enum.HumanoidStateType.Landed
-        or new == Enum.HumanoidStateType.Running then
-            if _G.jumpTrack then
-                _G.jumpTrack:Stop()
-                _G.jumpTrack:Destroy()
-                _G.jumpTrack = nil
-            end
-            if conn then conn:Disconnect() end
-        end
-    end)
-end
-
-        local function jump()
-            local char = getCharacter()
-            if not char then return end
-
-            local root = char:FindFirstChild("HumanoidRootPart")
-            local hum = char:FindFirstChildOfClass("Humanoid")
-
-            if not root or not hum then return end
-            if hum.FloorMaterial == Enum.Material.Air then return end
-
-            root.Velocity = Vector3.new(root.Velocity.X, _G.mobileJumpPowerValue, root.Velocity.Z)
-            playAssets(char)
-        end
-
-        if state then
-
-            if _G.jumpGui then
-                _G.jumpGui:Destroy()
-                _G.jumpGui = nil
-            end
-
-            local gui = Instance.new("ScreenGui")
-            gui.Name = "MobileJumpButton"
-            gui.ResetOnSpawn = false
-            gui.Parent = game.CoreGui
-
-            local button = Instance.new("ImageButton")
-            button.Parent = gui
-            button.Size = UDim2.new(0, 80, 0, 80)
-            button.Position = UDim2.new(0, 548, 0, 102)
-            button.BackgroundTransparency = 1
-            button.Image = "rbxassetid://8618269848"
-
-            local icon = Instance.new("ImageLabel")
-            icon.Parent = button
-            icon.Size = UDim2.new(0, 40, 0, 40)
-            icon.AnchorPoint = Vector2.new(0.5, 0.5)
-            icon.Position = UDim2.new(0.5, 0, 0.5, 0)
-            icon.BackgroundTransparency = 1
-            icon.Image = "rbxassetid://99260194327483"
-
-            _G.jumpBtnConnection = button.MouseButton1Click:Connect(jump)
-            _G.jumpGui = gui
-
-        else
-
-            if _G.jumpBtnConnection then
-                _G.jumpBtnConnection:Disconnect()
-                _G.jumpBtnConnection = nil
-            end
-
-            if _G.jumpGui then
-                _G.jumpGui:Destroy()
-                _G.jumpGui = nil
-            end
-
-        end
-
-    end
-})
-
-MovementTab:Slider({
-    Title = "JumpPower Value",
-    Desc = "",
-    Step = 1,
-    Value = {
-        Min = 1,
-        Max = 100,
-        Default = 50,
-    },
-    Callback = function(value)
-        _G.mobileJumpPowerValue = value
     end
 })
 
