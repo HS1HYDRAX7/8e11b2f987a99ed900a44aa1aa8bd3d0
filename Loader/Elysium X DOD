@@ -228,32 +228,56 @@ MovementTab:Toggle({
             end
         end
 
-        local function playAssets(char)
-            if not char then return end
+local function playAssets(char)
+    if not char then return end
 
-            local root = char:FindFirstChild("HumanoidRootPart")
-            if root then
-                local s = Instance.new("Sound")
-                s.SoundId = "rbxassetid://2428506580"
-                s.Volume = 1
-                s.Parent = root
-                s:Play()
-                game:GetService("Debris"):AddItem(s, 3)
+    local Players = game:GetService("Players")
+    local Debris = game:GetService("Debris")
+
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    local root = char:FindFirstChild("HumanoidRootPart")
+    if not hum or not root then return end
+
+    if _G.jumpTrack then
+        pcall(function()
+            _G.jumpTrack:Stop()
+            _G.jumpTrack:Destroy()
+        end)
+        _G.jumpTrack = nil
+    end
+
+    local sound = Instance.new("Sound")
+    sound.SoundId = "rbxassetid://2428506580"
+    sound.Volume = 1
+    sound.Parent = root
+    sound:Play()
+    Debris:AddItem(sound, 3)
+
+    local animator = hum:FindFirstChildOfClass("Animator") or Instance.new("Animator", hum)
+
+    local anim = Instance.new("Animation")
+    anim.AnimationId = "rbxassetid://73252070456923"
+
+    local track = animator:LoadAnimation(anim)
+    track.Looped = false
+    track:Play()
+
+    _G.jumpTrack = track
+
+    task.spawn(function()
+        while _G.jumpTrack do
+            if hum.FloorMaterial ~= Enum.Material.Air then
+                pcall(function()
+                    _G.jumpTrack:Stop()
+                    _G.jumpTrack:Destroy()
+                end)
+                _G.jumpTrack = nil
+                break
             end
-
-            local hum = char:FindFirstChildOfClass("Humanoid")
-            if hum then
-                local animator = hum:FindFirstChildOfClass("Animator") or Instance.new("Animator", hum)
-
-                local anim = Instance.new("Animation")
-                anim.AnimationId = "rbxassetid://73252070456923"
-
-                local track = animator:LoadAnimation(anim)
-                track:Play()
-
-                game:GetService("Debris"):AddItem(anim, 2)
-            end
+            task.wait(0.1)
         end
+    end)
+end
 
         local function jump()
             local char = getCharacter()
@@ -323,32 +347,50 @@ MovementTab:Toggle({
             end
         end
 
-        local function playAssets(char)
-            if not char then return end
+local function playAssets(char)
+    if not char then return end
 
-            local root = char:FindFirstChild("HumanoidRootPart")
-            if root then
-                local s = Instance.new("Sound")
-                s.SoundId = "rbxassetid://2428506580"
-                s.Volume = 1
-                s.Parent = root
-                s:Play()
-                game:GetService("Debris"):AddItem(s, 3)
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    local root = char:FindFirstChild("HumanoidRootPart")
+    if not hum or not root then return end
+
+    local sound = Instance.new("Sound")
+    sound.SoundId = "rbxassetid://2428506580"
+    sound.Volume = 1
+    sound.Parent = root
+    sound:Play()
+    game:GetService("Debris"):AddItem(sound, 3)
+
+    local animator = hum:FindFirstChildOfClass("Animator") or Instance.new("Animator", hum)
+
+    if _G.jumpTrack then
+        _G.jumpTrack:Stop()
+        _G.jumpTrack:Destroy()
+        _G.jumpTrack = nil
+    end
+
+    local anim = Instance.new("Animation")
+    anim.AnimationId = "rbxassetid://73252070456923"
+
+    local track = animator:LoadAnimation(anim)
+    track.Looped = false
+    track:Play()
+
+    _G.jumpTrack = track
+
+    local conn
+    conn = hum.StateChanged:Connect(function(_, new)
+        if new == Enum.HumanoidStateType.Landed
+        or new == Enum.HumanoidStateType.Running then
+            if _G.jumpTrack then
+                _G.jumpTrack:Stop()
+                _G.jumpTrack:Destroy()
+                _G.jumpTrack = nil
             end
-
-            local hum = char:FindFirstChildOfClass("Humanoid")
-            if hum then
-                local animator = hum:FindFirstChildOfClass("Animator") or Instance.new("Animator", hum)
-
-                local anim = Instance.new("Animation")
-                anim.AnimationId = "rbxassetid://73252070456923"
-
-                local track = animator:LoadAnimation(anim)
-                track:Play()
-
-                game:GetService("Debris"):AddItem(anim, 2)
-            end
+            if conn then conn:Disconnect() end
         end
+    end)
+end
 
         local function jump()
             local char = getCharacter()
