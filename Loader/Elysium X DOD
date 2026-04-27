@@ -208,16 +208,16 @@ MovementTab:Toggle({
 })
 
 MovementTab:Toggle({
-    Title = "Enable Jump (IN-GAME)",
+    Title = "Enable Jump (PC ONLY)",
     Desc = "",
     Value = false,
     Callback = function(state)
 
         local player = game:GetService("Players").LocalPlayer
         local UIS = game:GetService("UserInputService")
-        local RunService = game:GetService("RunService")
 
-        _G.jumpEnabled = state
+        _G.jumpEnabledPC = state
+        _G.jumpPowerValue = _G.jumpPowerValue or 50
 
         local function getCharacter()
             for _,v in ipairs(workspace:GetDescendants()) do
@@ -228,7 +228,7 @@ MovementTab:Toggle({
         end
 
         local function jump()
-            if not _G.jumpEnabled then return end
+            if not _G.jumpEnabledPC then return end
 
             local char = getCharacter()
             if not char then return end
@@ -239,17 +239,17 @@ MovementTab:Toggle({
             if not root or not hum then return end
             if hum.FloorMaterial == Enum.Material.Air then return end
 
-            root.Velocity = Vector3.new(root.Velocity.X, 50, root.Velocity.Z)
+            root.Velocity = Vector3.new(
+                root.Velocity.X,
+                _G.jumpPowerValue,
+                root.Velocity.Z
+            )
         end
 
         if state then
 
             if _G.jumpInputConn then
                 _G.jumpInputConn:Disconnect()
-            end
-
-            if _G.jumpBtnConn then
-                _G.jumpBtnConn:Disconnect()
             end
 
             _G.jumpInputConn = UIS.InputBegan:Connect(function(input, gpe)
@@ -259,35 +259,31 @@ MovementTab:Toggle({
                 end
             end)
 
-            _G.jumpBtnConn = RunService.RenderStepped:Connect(function()
-                if not _G.jumpEnabled then return end
-
-                local gui = game.CoreGui:FindFirstChild("MobileJumpButton")
-                if gui then
-                    local btn = gui:FindFirstChildWhichIsA("ImageButton", true)
-                    if btn and not btn:GetAttribute("Connected") then
-                        btn:SetAttribute("Connected", true)
-                        btn.MouseButton1Click:Connect(jump)
-                    end
-                end
-            end)
-
         else
 
-            _G.jumpEnabled = false
+            _G.jumpEnabledPC = false
 
             if _G.jumpInputConn then
                 _G.jumpInputConn:Disconnect()
                 _G.jumpInputConn = nil
             end
 
-            if _G.jumpBtnConn then
-                _G.jumpBtnConn:Disconnect()
-                _G.jumpBtnConn = nil
-            end
-
         end
 
+    end
+})
+
+MovementTab:Slider({
+    Title = "JumpPower Value",
+    Desc = "",
+    Step = 1,
+    Value = {
+        Min = 1,
+        Max = 100,
+        Default = 50,
+    },
+    Callback = function(value)
+        _G.jumpPowerValue = value
     end
 })
 
@@ -299,6 +295,8 @@ MovementTab:Toggle({
 
         local player = game:GetService("Players").LocalPlayer
 
+        _G.mobileJumpPowerValue = _G.mobileJumpPowerValue or 50
+
         local function getCharacter()
             for _,v in ipairs(workspace:GetDescendants()) do
                 if v:IsA("Model") and v.Name == player.Name then
@@ -308,6 +306,11 @@ MovementTab:Toggle({
         end
 
         if state then
+
+            if _G.jumpGui then
+                _G.jumpGui:Destroy()
+                _G.jumpGui = nil
+            end
 
             local gui = Instance.new("ScreenGui")
             gui.Name = "MobileJumpButton"
@@ -333,16 +336,22 @@ MovementTab:Toggle({
                 local char = getCharacter()
                 if not char then return end
 
+                local root = char:FindFirstChild("HumanoidRootPart")
                 local hum = char:FindFirstChildOfClass("Humanoid")
-                if not hum then return end
 
-                if hum.FloorMaterial ~= Enum.Material.Air then
-                    hum:ChangeState(Enum.HumanoidStateType.Jumping)
-                end
+                if not root or not hum then return end
+                if hum.FloorMaterial == Enum.Material.Air then return end
+
+                local power = _G.mobileJumpPowerValue or 50
+
+                root.Velocity = Vector3.new(
+                    root.Velocity.X,
+                    power,
+                    root.Velocity.Z
+                )
             end
 
             _G.jumpBtnConnection = button.MouseButton1Click:Connect(jump)
-
             _G.jumpGui = gui
 
         else
@@ -359,6 +368,20 @@ MovementTab:Toggle({
 
         end
 
+    end
+})
+
+MovementTab:Slider({
+    Title = "JumpPower Value",
+    Desc = "",
+    Step = 1,
+    Value = {
+        Min = 1,
+        Max = 100,
+        Default = 50,
+    },
+    Callback = function(value)
+        _G.mobileJumpPowerValue = value
     end
 })
 
