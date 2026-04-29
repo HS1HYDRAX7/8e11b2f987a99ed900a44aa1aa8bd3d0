@@ -17,7 +17,7 @@ Window:SetToggleKey(Enum.KeyCode.G)
 
 Window:Tag({
     Title = "V0.2",
-    Icon = "astroid",
+    Icon = "circle-check",
     Color = Color3.fromHex("#990000"),
     Radius = 13,
 })
