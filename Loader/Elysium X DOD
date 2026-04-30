@@ -39,6 +39,7 @@ local MainTab = Window:Tab({ Title = "Main", Icon = "star", Locked = false })
 local MovementTab = Window:Tab({ Title = "Movement", Icon = "chevrons-right", Locked = false })
 local VisualsTab = Window:Tab({ Title = "Visuals", Icon = "eye", Locked = false })
 local SkillsSelectorTab = Window:Tab({ Title = "Skills Selector", Icon = "blocks", Locked = false })
+local AntiTab = Window:Tab({ Title = "Anti", Icon = "circle-off", Locked = false })
 local MiscTab = Window:Tab({ Title = "Misc", Icon = "folder", Locked = false })
 local SettingsTab = Window:Tab({ Title = "Settings", Icon = "cog", Locked = false})
 
@@ -561,42 +562,39 @@ VisualsTab:Toggle({
 
         _G.ignoreSelf = state
 
-        local function getCharacter()
-            for _,v in ipairs(workspace:GetDescendants()) do
-                if v:IsA("Model") and v.Name == player.Name then
-                    return v
-                end
-            end
-        end
-
-        local function removeSelfESP()
-            local char = getCharacter()
+        local function removeESP(char)
             if not char then return end
-
             local h = char:FindFirstChild("ESP_HIGHLIGHT")
             if h then h:Destroy() end
         end
 
+        local function setup(char)
+            if not _G.ignoreSelf then return end
+            task.wait(0.1)
+            removeESP(char)
+        end
+
         if state then
 
-            removeSelfESP()
-
-            if _G.ignoreLoop then
-                _G.ignoreLoop:Disconnect()
+            if player.Character then
+                setup(player.Character)
             end
 
-            _G.ignoreLoop = game:GetService("RunService").RenderStepped:Connect(function()
-                if not _G.ignoreSelf then return end
-                removeSelfESP()
+            if _G.ignoreCharConn then
+                _G.ignoreCharConn:Disconnect()
+            end
+
+            _G.ignoreCharConn = player.CharacterAdded:Connect(function(char)
+                setup(char)
             end)
 
         else
 
             _G.ignoreSelf = false
 
-            if _G.ignoreLoop then
-                _G.ignoreLoop:Disconnect()
-                _G.ignoreLoop = nil
+            if _G.ignoreCharConn then
+                _G.ignoreCharConn:Disconnect()
+                _G.ignoreCharConn = nil
             end
 
         end
@@ -752,6 +750,385 @@ SkillsSelectorTab:Button({
             end
 
             task.wait(0.1)
+        end
+
+    end
+})
+
+AntiTab:Toggle({
+    Title = "Anti-Artful Walls",
+    Desc = "",
+    Value = false,
+    Callback = function(state)
+
+        local Workspace = game:GetService("Workspace")
+        local Other = Workspace:WaitForChild("GameAssets")
+            :WaitForChild("Teams")
+            :WaitForChild("Other")
+
+        _G.antiWalls = state
+        _G.antiWallsCache = _G.antiWallsCache or {}
+
+        local function apply(v)
+            if not (v:IsA("BasePart") and v.Name == "HumanoidRootPart" and v.Anchored) then return end
+
+            if _G.antiWalls then
+
+                if not _G.antiWallsCache[v] then
+                    _G.antiWallsCache[v] = {
+                        CanCollide = v.CanCollide,
+                        CanTouch = v.CanTouch,
+                        Transparency = v.Transparency
+                    }
+                end
+
+                v.CanCollide = false
+                v.CanTouch = false
+                v.Transparency = 0.5
+
+            else
+
+                if _G.antiWallsCache[v] then
+                    local data = _G.antiWallsCache[v]
+                    v.CanCollide = data.CanCollide
+                    v.CanTouch = data.CanTouch
+                    v.Transparency = data.Transparency
+                end
+
+            end
+        end
+
+        local function scan()
+            for _,v in ipairs(Other:GetDescendants()) do
+                apply(v)
+            end
+        end
+
+        scan()
+
+        if state then
+            _G.antiWallsConn = Other.DescendantAdded:Connect(function(v)
+                if not _G.antiWalls then return end
+                task.wait(0.05)
+                apply(v)
+            end)
+        else
+            if _G.antiWallsConn then
+                _G.antiWallsConn:Disconnect()
+                _G.antiWallsConn = nil
+            end
+
+            scan()
+        end
+
+    end
+})
+
+AntiTab:Toggle({
+    Title = "Disable Badware Computer Cooldown",
+    Desc = "",
+    Value = false,
+    Callback = function(state)
+
+        local Workspace = game:GetService("Workspace")
+        local Cleanable = Workspace:WaitForChild("GameAssets")
+            :WaitForChild("Debris")
+            :WaitForChild("Cleanable")
+
+        _G.antiComputer = state
+        _G.antiComputerCache = _G.antiComputerCache or {}
+
+        local function apply(prompt)
+            if not prompt:IsA("ProximityPrompt") then return end
+            if not prompt.Parent or prompt.Parent.Name ~= "Primary" then return end
+
+            if _G.antiComputer then
+
+                if not _G.antiComputerCache[prompt] then
+                    _G.antiComputerCache[prompt] = {
+                        HoldDuration = prompt.HoldDuration,
+                        RequiresLineOfSight = prompt.RequiresLineOfSight,
+                        Enabled = prompt.Enabled
+                    }
+                end
+
+                prompt.HoldDuration = 0
+                prompt.RequiresLineOfSight = false
+                prompt.Enabled = true
+
+            else
+
+                if _G.antiComputerCache[prompt] then
+                    local data = _G.antiComputerCache[prompt]
+                    prompt.HoldDuration = data.HoldDuration
+                    prompt.RequiresLineOfSight = data.RequiresLineOfSight
+                    prompt.Enabled = data.Enabled
+                end
+
+            end
+        end
+
+        local function scan()
+            for _,v in ipairs(Cleanable:GetDescendants()) do
+                apply(v)
+            end
+        end
+
+        scan()
+
+        if state then
+            _G.antiComputerConn = Cleanable.DescendantAdded:Connect(function(v)
+                if not _G.antiComputer then return end
+                task.wait(0.05)
+                apply(v)
+            end)
+        else
+            if _G.antiComputerConn then
+                _G.antiComputerConn:Disconnect()
+                _G.antiComputerConn = nil
+            end
+
+            scan()
+        end
+
+    end
+})
+
+AntiTab:Toggle({
+    Title = "Anti-Killer Only Walls",
+    Desc = "",
+    Value = false,
+    Callback = function(state)
+
+        local Workspace = game:GetService("Workspace")
+        local GameAssets = Workspace:WaitForChild("GameAssets")
+
+        _G.antiKiller = state
+        _G.antiKillerCache = _G.antiKillerCache or {}
+
+        local function apply(folder)
+            local killerOnly = folder:FindFirstChild("KillerOnly")
+            if not killerOnly then return end
+
+            for _,v in ipairs(killerOnly:GetDescendants()) do
+                if v:IsA("BasePart") then
+
+                    if _G.antiKiller then
+                        if _G.antiKillerCache[v] == nil then
+                            _G.antiKillerCache[v] = {
+                                CanCollide = v.CanCollide,
+                                CanTouch = v.CanTouch
+                            }
+                        end
+
+                        v.CanCollide = false
+                        v.CanTouch = false
+
+                    else
+                        if _G.antiKillerCache[v] then
+                            v.CanCollide = _G.antiKillerCache[v].CanCollide
+                            v.CanTouch = _G.antiKillerCache[v].CanTouch
+                        end
+                    end
+
+                end
+            end
+        end
+
+        local function scan()
+            for _,map in ipairs(GameAssets:GetChildren()) do
+                if map.Name == "Map" then
+                    local config = map:FindFirstChild("Config")
+                    if config then
+                        apply(config)
+                    end
+                end
+            end
+        end
+
+        scan()
+
+        if state then
+            _G.antiKillerConn = GameAssets.ChildAdded:Connect(function(map)
+                if not _G.antiKiller then return end
+                if map.Name ~= "Map" then return end
+
+                task.wait(0.2)
+
+                local config = map:FindFirstChild("Config")
+                if config then
+                    apply(config)
+                end
+            end)
+        else
+            if _G.antiKillerConn then
+                _G.antiKillerConn:Disconnect()
+                _G.antiKillerConn = nil
+            end
+
+            scan()
+        end
+
+    end
+})
+
+AntiTab:Toggle({
+    Title = "Anti-Barriers",
+    Desc = "",
+    Value = false,
+    Callback = function(state)
+
+        local Workspace = game:GetService("Workspace")
+        local GameAssets = Workspace:WaitForChild("GameAssets")
+
+        _G.antiBarriers = state
+        _G.antiBarriersCache = _G.antiBarriersCache or {}
+
+        local function apply(build)
+            local barriers = build:FindFirstChild("Barriers")
+            if not barriers then return end
+
+            for _,v in ipairs(barriers:GetDescendants()) do
+                if v:IsA("BasePart") then
+
+                    if _G.antiBarriers then
+                        if not _G.antiBarriersCache[v] then
+                            _G.antiBarriersCache[v] = {
+                                CanCollide = v.CanCollide,
+                                CanTouch = v.CanTouch
+                            }
+                        end
+
+                        v.CanCollide = false
+                        v.CanTouch = false
+
+                    else
+                        if _G.antiBarriersCache[v] then
+                            local data = _G.antiBarriersCache[v]
+                            v.CanCollide = data.CanCollide
+                            v.CanTouch = data.CanTouch
+                        end
+                    end
+
+                end
+            end
+        end
+
+        local function scan()
+            for _,map in ipairs(GameAssets:GetChildren()) do
+                if map.Name == "Map" then
+                    local build = map:FindFirstChild("Build")
+                    if build then
+                        apply(build)
+                    end
+                end
+            end
+        end
+
+        scan()
+
+        if state then
+            _G.antiBarriersConn = GameAssets.ChildAdded:Connect(function(map)
+                if not _G.antiBarriers then return end
+                if map.Name ~= "Map" then return end
+
+                task.wait(0.2)
+
+                local build = map:FindFirstChild("Build")
+                if build then
+                    apply(build)
+                end
+            end)
+        else
+            if _G.antiBarriersConn then
+                _G.antiBarriersConn:Disconnect()
+                _G.antiBarriersConn = nil
+            end
+
+            scan()
+        end
+
+    end
+})
+
+AntiTab:Toggle({
+    Title = "Anti Evil Scary",
+    Desc = "",
+    Value = false,
+    Callback = function(state)
+
+        local Workspace = game:GetService("Workspace")
+        local Cleanable = Workspace:WaitForChild("GameAssets")
+            :WaitForChild("Debris")
+            :WaitForChild("Cleanable")
+
+        _G.antiEvil = state
+        _G.antiEvilCache = _G.antiEvilCache or {}
+
+        local function apply(obj)
+            if obj.Name ~= "EvilScary" then return end
+
+            for _,v in ipairs(obj:GetDescendants()) do
+
+                if v:IsA("BasePart") then
+
+                    if _G.antiEvil then
+                        if not _G.antiEvilCache[v] then
+                            _G.antiEvilCache[v] = {
+                                CanCollide = v.CanCollide,
+                                CanTouch = v.CanTouch,
+                                CanQuery = v.CanQuery,
+                                Transparency = v.Transparency
+                            }
+                        end
+
+                        v.CanCollide = false
+                        v.CanTouch = false
+                        pcall(function() v.CanQuery = false end)
+                        v.Transparency = 1
+
+                    else
+                        if _G.antiEvilCache[v] then
+                            local data = _G.antiEvilCache[v]
+                            v.CanCollide = data.CanCollide
+                            v.CanTouch = data.CanTouch
+                            pcall(function() v.CanQuery = data.CanQuery end)
+                            v.Transparency = data.Transparency
+                        end
+                    end
+
+                elseif v:IsA("TouchTransmitter") then
+                    if _G.antiEvil then
+                        v.Enabled = false
+                    else
+                        v.Enabled = true
+                    end
+                end
+
+            end
+        end
+
+        local function scan()
+            for _,v in ipairs(Cleanable:GetChildren()) do
+                apply(v)
+            end
+        end
+
+        scan()
+
+        if state then
+            _G.antiEvilConn = Cleanable.ChildAdded:Connect(function(v)
+                if not _G.antiEvil then return end
+                task.wait(0.05)
+                apply(v)
+            end)
+        else
+            if _G.antiEvilConn then
+                _G.antiEvilConn:Disconnect()
+                _G.antiEvilConn = nil
+            end
+
+            scan()
         end
 
     end
