@@ -219,7 +219,11 @@ MovementTab:Toggle({
         _G.sprintValue = _G.sprintValue or 5
 
         local function getCharacter()
-            return player.Character
+            for _,v in ipairs(workspace:GetDescendants()) do
+                if v:IsA("Model") and v.Name == player.Name then
+                    return v
+                end
+            end
         end
 
         local function apply(char)
@@ -227,38 +231,27 @@ MovementTab:Toggle({
             if char:GetAttribute("WalkSpeedModifier") == nil then return end
 
             if _G.sprintEnabled then
-                if char:GetAttribute("WalkSpeedModifier") ~= _G.sprintValue then
-                    char:SetAttribute("WalkSpeedModifier", _G.sprintValue)
-                end
+                char:SetAttribute("WalkSpeedModifier", _G.sprintValue)
             else
-                if char:GetAttribute("WalkSpeedModifier") ~= 0 then
-                    char:SetAttribute("WalkSpeedModifier", 0)
-                end
+                char:SetAttribute("WalkSpeedModifier", 0)
             end
-        end
-
-        local function hookAttribute(char)
-            if not char then return end
-
-            if _G.sprintWatchConn then
-                _G.sprintWatchConn:Disconnect()
-            end
-
-            _G.sprintWatchConn = char:GetAttributeChangedSignal("WalkSpeedModifier"):Connect(function()
-                apply(char)
-            end)
         end
 
         if state then
 
             local char = getCharacter()
             apply(char)
-            hookAttribute(char)
 
-            _G.sprintCharConn = player.CharacterAdded:Connect(function(char)
-                task.wait(0.2)
-                apply(char)
-                hookAttribute(char)
+            _G.sprintCharConn = player.CharacterAdded:Connect(function()
+                task.wait(0.5)
+                apply(getCharacter())
+            end)
+
+            _G.sprintAttrConn = workspace.DescendantAdded:Connect(function(v)
+                if v:IsA("Model") and v.Name == player.Name then
+                    task.wait(0.2)
+                    apply(v)
+                end
             end)
 
         else
@@ -271,9 +264,9 @@ MovementTab:Toggle({
                 _G.sprintCharConn = nil
             end
 
-            if _G.sprintWatchConn then
-                _G.sprintWatchConn:Disconnect()
-                _G.sprintWatchConn = nil
+            if _G.sprintAttrConn then
+                _G.sprintAttrConn:Disconnect()
+                _G.sprintAttrConn = nil
             end
 
         end
@@ -988,19 +981,17 @@ AntiTab:Toggle({
         local Workspace = game:GetService("Workspace")
         local GameAssets = Workspace:WaitForChild("GameAssets")
 
-        _G.antiBarriers = state
-        _G.antiBarriersCache = _G.antiBarriersCache or {}
+        _G.antiKillerBarriers = state
+        _G.antiKillerBarriersCache = _G.antiKillerBarriersCache or {}
 
-        local function apply(build)
-            local barriers = build:FindFirstChild("Barriers")
-            if not barriers then return end
-
-            for _,v in ipairs(barriers:GetDescendants()) do
+        local function apply(folder)
+            for _,v in ipairs(folder:GetDescendants()) do
                 if v:IsA("BasePart") then
 
-                    if _G.antiBarriers then
-                        if not _G.antiBarriersCache[v] then
-                            _G.antiBarriersCache[v] = {
+                    if _G.antiKillerBarriers then
+
+                        if not _G.antiKillerBarriersCache[v] then
+                            _G.antiKillerBarriersCache[v] = {
                                 CanCollide = v.CanCollide,
                                 CanTouch = v.CanTouch
                             }
@@ -1010,11 +1001,13 @@ AntiTab:Toggle({
                         v.CanTouch = false
 
                     else
-                        if _G.antiBarriersCache[v] then
-                            local data = _G.antiBarriersCache[v]
+
+                        if _G.antiKillerBarriersCache[v] then
+                            local data = _G.antiKillerBarriersCache[v]
                             v.CanCollide = data.CanCollide
                             v.CanTouch = data.CanTouch
                         end
+
                     end
 
                 end
@@ -1024,9 +1017,12 @@ AntiTab:Toggle({
         local function scan()
             for _,map in ipairs(GameAssets:GetChildren()) do
                 if map.Name == "Map" then
-                    local build = map:FindFirstChild("Build")
-                    if build then
-                        apply(build)
+                    local config = map:FindFirstChild("Config")
+                    if config then
+                        local killerBarriers = config:FindFirstChild("KillerBarriers")
+                        if killerBarriers then
+                            apply(killerBarriers)
+                        end
                     end
                 end
             end
@@ -1035,21 +1031,24 @@ AntiTab:Toggle({
         scan()
 
         if state then
-            _G.antiBarriersConn = GameAssets.ChildAdded:Connect(function(map)
-                if not _G.antiBarriers then return end
+            _G.antiKillerBarriersConn = GameAssets.ChildAdded:Connect(function(map)
+                if not _G.antiKillerBarriers then return end
                 if map.Name ~= "Map" then return end
 
                 task.wait(0.2)
 
-                local build = map:FindFirstChild("Build")
-                if build then
-                    apply(build)
+                local config = map:FindFirstChild("Config")
+                if config then
+                    local killerBarriers = config:FindFirstChild("KillerBarriers")
+                    if killerBarriers then
+                        apply(killerBarriers)
+                    end
                 end
             end)
         else
-            if _G.antiBarriersConn then
-                _G.antiBarriersConn:Disconnect()
-                _G.antiBarriersConn = nil
+            if _G.antiKillerBarriersConn then
+                _G.antiKillerBarriersConn:Disconnect()
+                _G.antiKillerBarriersConn = nil
             end
 
             scan()
