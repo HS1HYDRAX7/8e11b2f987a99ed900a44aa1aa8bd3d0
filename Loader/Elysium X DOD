@@ -38,7 +38,7 @@ Window:EditOpenButton({
 local MainTab = Window:Tab({ Title = "Main", Icon = "star", Locked = false })
 local MovementTab = Window:Tab({ Title = "Movement", Icon = "chevrons-right", Locked = false })
 local VisualsTab = Window:Tab({ Title = "Visuals", Icon = "eye", Locked = false })
-local SkillsSelectorTab = Window:Tab({ Title = "Skills Selector", Icon = "blocks", Locked = false })
+local AbilitiesManagerTab = Window:Tab({ Title = "Abilities Manager", Icon = "blocks", Locked = false })
 local AntiTab = Window:Tab({ Title = "Anti", Icon = "circle-off", Locked = false })
 local MiscTab = Window:Tab({ Title = "Misc", Icon = "folder", Locked = false })
 local SettingsTab = Window:Tab({ Title = "Settings", Icon = "cog", Locked = false})
@@ -648,13 +648,13 @@ VisualsTab:Toggle({
     end
 })
 
-SkillsSelectorTab:Section({
-    Title = "Skill Selector",
+AbilitiesManagerTab:Section({
+    Title = "Ability Selector",
     Icon = "blocks",
 })
 
-SkillsSelectorTab:Dropdown({
-    Title = "Select Skill 1",
+AbilitiesManagerTab:Dropdown({
+    Title = "Select Ability 1",
     Desc = "",
     Values = { "None","Adrenaline","Punch","Caretaker","Cloak","Block","Dash","BonusPad","Hotdog","Revolver","Taunt","Banana" },
     Value = "None",
@@ -663,8 +663,8 @@ SkillsSelectorTab:Dropdown({
     end
 })
 
-SkillsSelectorTab:Dropdown({
-    Title = "Select Skill 2",
+AbilitiesManagerTab:Dropdown({
+    Title = "Select Ability 2",
     Desc = "",
     Values = { "None","Adrenaline","Punch","Caretaker","Cloak","Block","Dash","BonusPad","Hotdog","Revolver","Taunt","Banana" },
     Value = "None",
@@ -673,8 +673,8 @@ SkillsSelectorTab:Dropdown({
     end
 })
 
-SkillsSelectorTab:Button({
-    Title = "Choose Ability",
+AbilitiesManagerTab:Button({
+    Title = "Choose Abilities",
     Desc = "",
     Callback = function()
 
@@ -730,7 +730,7 @@ SkillsSelectorTab:Button({
     end
 })
 
-SkillsSelectorTab:Button({
+AbilitiesManagerTab:Button({
     Title = "Give All Abilities",
     Desc = "",
     Callback = function()
@@ -797,6 +797,162 @@ SkillsSelectorTab:Button({
 
             task.wait(0.1)
         end
+
+    end
+})
+
+AbilitiesManagerTab:Section({
+    Title = "Cards Summoner",
+    Icon = "blocks",
+})
+
+AbilitiesManagerTab:Section({ 
+    Title = "Card 1",
+})
+
+AbilitiesManagerTab:Dropdown({
+    Title = "First Ability",
+    Values = (function()
+        return { "Adrenaline","Punch","Caretaker","Cloak","Block","Dash","BonusPad","Hotdog","Revolver","Taunt","Banana" }
+    end)(),
+    Value = "Revolver",
+    Callback = function(v)
+
+        _G._cardSettings = _G._cardSettings or {
+            {"Revolver","Caretaker"},
+            {"BonusPad","Caretaker"},
+            {"Revolver","Punch"}
+        }
+
+        _G._cardSettings[1][1] = v
+    end
+})
+
+AbilitiesManagerTab:Dropdown({
+    Title = "Second Ability",
+    Values = (function()
+        return { "Adrenaline","Punch","Caretaker","Cloak","Block","Dash","BonusPad","Hotdog","Revolver","Taunt","Banana" }
+    end)(),
+    Value = "Caretaker",
+    Callback = function(v)
+
+        _G._cardSettings = _G._cardSettings or {
+            {"Revolver","Caretaker"},
+            {"BonusPad","Caretaker"},
+            {"Revolver","Punch"}
+        }
+
+        _G._cardSettings[1][2] = v
+    end
+})
+
+AbilitiesManagerTab:Section({ 
+    Title = "Card 2",
+})
+
+AbilitiesManagerTab:Dropdown({
+    Title = "First Ability",
+    Values = (function()
+        return { "Adrenaline","Punch","Caretaker","Cloak","Block","Dash","BonusPad","Hotdog","Revolver","Taunt","Banana" }
+    end)(),
+    Value = "BonusPad",
+    Callback = function(v)
+
+        _G._cardSettings = _G._cardSettings or {
+            {"Revolver","Caretaker"},
+            {"BonusPad","Caretaker"},
+            {"Revolver","Punch"}
+        }
+
+        _G._cardSettings[2][1] = v
+    end
+})
+
+AbilitiesManagerTab:Dropdown({
+    Title = "Second Ability",
+    Values = (function()
+        return { "Adrenaline","Punch","Caretaker","Cloak","Block","Dash","BonusPad","Hotdog","Revolver","Taunt","Banana" }
+    end)(),
+    Value = "Caretaker",
+    Callback = function(v)
+
+        _G._cardSettings = _G._cardSettings or {
+            {"Revolver","Caretaker"},
+            {"BonusPad","Caretaker"},
+            {"Revolver","Punch"}
+        }
+
+        _G._cardSettings[2][2] = v
+    end
+})
+
+AbilitiesManagerTab:Section({ 
+    Title = "Card 3",
+})
+
+AbilitiesManagerTab:Dropdown({
+    Title = "First Ability",
+    Values = (function()
+        return { "Adrenaline","Punch","Caretaker","Cloak","Block","Dash","BonusPad","Hotdog","Revolver","Taunt","Banana" }
+    end)(),
+    Value = "Revolver",
+    Callback = function(v)
+
+        _G._cardSettings = _G._cardSettings or {
+            {"Revolver","Caretaker"},
+            {"BonusPad","Caretaker"},
+            {"Revolver","Punch"}
+        }
+
+        _G._cardSettings[3][1] = v
+    end
+})
+
+AbilitiesManagerTab:Dropdown({
+    Title = "Second Ability",
+    Values = (function()
+        return { "Adrenaline","Punch","Caretaker","Cloak","Block","Dash","BonusPad","Hotdog","Revolver","Taunt","Banana" }
+    end)(),
+    Value = "Punch",
+    Callback = function(v)
+
+        _G._cardSettings = _G._cardSettings or {
+            {"Revolver","Caretaker"},
+            {"BonusPad","Caretaker"},
+            {"Revolver","Punch"}
+        }
+
+        _G._cardSettings[3][2] = v
+    end
+})
+
+AbilitiesManagerTab:Space()
+
+AbilitiesManagerTab:Button({
+    Title = "Summon Chosen Cards",
+    Callback = function()
+
+        _G._cardSettings = _G._cardSettings or {
+            {"Revolver","Caretaker"},
+            {"BonusPad","Caretaker"},
+            {"Revolver","Punch"}
+        }
+
+        local UIModule
+        pcall(function()
+            UIModule = require(game:GetService("Players").LocalPlayer
+                :WaitForChild("PlayerGui")
+                :WaitForChild("MainGui")
+                :WaitForChild("Client")
+                :WaitForChild("Modules")
+                :WaitForChild("UI"))
+        end)
+
+        if not UIModule then return end
+
+        pcall(function()
+            UIModule.AbilitySelection(_G._cardSettings[1], _G._cardSettings[2], _G._cardSettings[3])
+        end)
 
     end
 })
