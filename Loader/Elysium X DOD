@@ -966,7 +966,7 @@ local presets = {
     },
     Ghost = {
         Run  = "rbxassetid://124260679864309",
-        Walk = "rbxassetid://124260679864309",
+        Walk = "rbxassetid://133938914809228",
         Idle = "rbxassetid://110395159339100"
     }
 }
