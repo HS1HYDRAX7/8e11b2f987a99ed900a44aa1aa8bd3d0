@@ -81,7 +81,7 @@ MainTab:Paragraph({
 
 MainTab:Section({
     Title = "Interface Customization",
-    Icon = "paintbrush",
+    Icon = "brush",
 })
 
 MainTab:Dropdown({
