@@ -2289,7 +2289,7 @@ end
 FrontFlip(true)
 
 WindUI:Notify({
-    Title = "Next Studios",
+    Title = "45786153617475726E",
     Content = "Welcome! We're glad to have you here. Enjoy your experience!",
     Icon = "sparkles",
     Duration = 5,
